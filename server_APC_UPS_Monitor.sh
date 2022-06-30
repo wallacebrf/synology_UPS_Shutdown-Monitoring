@@ -1,9 +1,9 @@
 #!/bin/bash
-VERSION="2/02/2022"
+VERSION="5/18/2022"
 #By Brian Wallace
 
 #This script pulls data from an APC UPS with a Network Management Card 2 installed. if the UPS does not have a network management cad installed, this script cannot interface with a USB connected UPS. 
-#This script has been coded to utilize the network management card 2 from APC and has not been tested with the version 3 of the card however it is unknown if the script will still function. 
+#This script has been coded to utilize the network management card 2 or version 3 from APC. 
 
 
 #***************************************************
@@ -122,7 +122,7 @@ VERSION="2/02/2022"
 #	3 e.) verify SS is commanded to turn off------------------------------------------------------------------------------------ VERIFIED OK 
 #	3 f.) while on battery, kill UPS communications, verify system shuts down immediately--------------------------------------- VERIFIED OK  
 #   3 g.) while on battery, when system shuts down, UPS outlet group delay time is properly commanded -------------------------- VERIFIED OK
-#   3 h.) while on battery, when system shuts down, UPS turns outlets off after set delay period ------------------------------- NOT Yet Verified 
+#   3 h.) while on battery, when system shuts down, UPS turns outlets off after set delay period ------------------------------- VERIFIED OK
 #4.) after load shedding and before system shutdown, power comes back
 #	4 a.) verify outlets turn back on------------------------------------------------------------------------------------------- VERIFIED OK
 #	4 b.) verify plex turns back on--------------------------------------------------------------------------------------------- VERIFIED OK 
@@ -141,7 +141,7 @@ ups_email_delay_counter="ups_email2.txt"
 ups_notification_file="ups_notifiation2.txt"
 shutdown_email_contents="shutdown_contents2.txt"
 sendmail_installed=0
-from_email_address="admin@admin.com"
+
 
 server_type=1 #1=server2, 2=server_NVR, 3=server_plex
 
@@ -564,6 +564,7 @@ if [ $UPS_Shutdown -eq 0 ]; then
 		outlet_16_load_shed_yes_no=${explode[43]}
 		ups_outlet_group_turn_off_enable=${explode[44]}
 		ups_outlet_group_turn_off_delay=${explode[45]}
+		from_email_address=${explode[46]}
 
 		APC_online=0 #initially set the UPS as off line and as we will check if the UPS is on line soon
 		
@@ -1249,10 +1250,14 @@ if [ $UPS_Shutdown -eq 0 ]; then
 						
 						if [ $ups_email_time -ge $ups_email_delay ] #yes it has been more than 2 minutes
 						then
+						
+							#get how long the UPS has been running off battery
+							time_running_off_battery=`snmpwalk -v3 -l authPriv -u $UPS_snmp_user -a $UPS_snmp_auth_protocol -A $UPS_AuthPass1 -x $UPS_snmp_privacy_protocol -X $UPS_PrivPass2 $UPS_url:161 1.3.6.1.4.1.318.1.1.1.2.1.2.0 -Oqv`
+							
 							now=$(date +"%T")
 							echo "sending email notification that UPS is on battery power"
 							#send out a notification email. this email will include the battery information, run time remaining
-							mailbody="$now - Warning $nas_name is Operating on Battery Power. If power is not returned soon, the system will shutdown if the runtime drops below $shutdown_runtime minutes. UPS Voltage: $input_voltage VAC, Battery Capacity: $battery_capacity %, Runtime Remaining: ${array[1]} Hours : ${array[2]} Minutes : ${array[3]} Seconds "
+							mailbody="$now - Warning $nas_name is Operating on Battery Power for $time_running_off_battery. If power is not returned soon, the system will shutdown if the runtime drops below $shutdown_runtime minutes. UPS Voltage: $input_voltage VAC, Battery Capacity: $battery_capacity %, Runtime Remaining: ${array[1]} Hours : ${array[2]} Minutes : ${array[3]} Seconds "
 							echo "from: $from_email_address " > $notification_file_location/$ups_notification_file
 							echo "to: $email_address " >> $notification_file_location/$ups_notification_file
 							echo "subject: $nas_name Operating on Battery Power " >> $notification_file_location/$ups_notification_file
