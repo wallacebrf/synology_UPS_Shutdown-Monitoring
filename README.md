@@ -193,85 +193,19 @@ This project is written around a Synology NAS and their DSM specific SNMP OIDs a
 
 ### Installation
 
-Note: this assumes InfluxDB version 2 is already installed and properly configured.
 
-1. Create the following directories on the NAS
 
-```
-1. %PHP_Server_Root%/config
-2. %PHP_Server_Root%/logging
-3. %PHP_Server_Root%/logging/notifications
-```
+### Configuration 
 
-note: ```%PHP_Server_Root%``` is what ever shred folder location the PHP web server root directory is configured to be.
 
-2. Place the ```functions.php``` file in the root of the PHP web server running on the NAS
-
-3. Place the ```synology_snmp.sh``` file in the ```/logging``` directory
-
-4. Place the ```server2_config.php``` file in the ```/config``` direcotry
-
-5. Create a scheduled task on boot up in Synology Task Scheduler to add the following line
-
-		#mount -t tmpfs -o size=1% ramdisk $notification_file_location
-
-		#where "$notification_file_location" is the location created above ```%PHP_Server_Root%/logging/notifications```
-
-### Configuration "synology_snmp.sh"
-
-1. Open the ```synology_snmp.sh``` file in a text editor. 
-2. the script contains the following configuration variables
-```
-email_logging_file_location="/volume1/web/logging/notifications/logging_variable2.txt"
-lock_file_location="/volume1/web/logging/notifications/synology_snmp2.lock"
-config_file_location="/volume1/web/config/config_files/config_files_local/system_config2.txt"
-log_file_location="/volume1/web/logging/notifications"
-```
-
-for the variables above, ensure the "/volume1/web" is the correct location for the root of the PHP web server, correct as required
-
-3. delete the lines between ```#for my personal use as i have multiple synology systems, these lines can be deleted by other users``` and ```#Script Start``` as those are for my personal use as i use this script for several units that have slightly different configurations	
-
-4. find the line 
-```
-curl -XPOST "http://$influxdb_host:$influxdb_port/api/v2/write?bucket=$influxdb_name&org=home" -H "Authorization: Token $influxdb_pass" --data-raw "$post_url"
-``` 
-
-Ensure the ```&org=home``` matches the name of the organization used in your configuration
-
-### Configuration "server2_config.php"
-
-1. Open the ```server2_config.php``` file in a text editor
-2. the script contains the following configuration variables
-```
-$form_submit_location="index.php?page=6&config_page=server2_snmp";
-$config_file="/volume1/web/config/config_files/config_files_local/system_config2.txt";
-$page_title="Server2 Logging Configuration Settings";
-```
-
-ENSURE THE VALUES FOR ```$config_file``` ARE THE SAME AS THAT CONFIGURED IN [Configuration "synology_snmp.sh"] FOR THE VARIABLE ```config_file_location```
-
-the ```form_submit_location``` can either be set to the name of the "server2_config.php" file itself, or if the "server2_config.php" file is embedded in another PHP file using an "include_once" then the location should be to that php file
-
-the variable ```page_title``` controls the title of the page when viewing it in a browser. 
 
 
 ### Configuration of required settings
 
-<img src="https://github.com/wallacebrf/synology_UPS_Shutdown-Monitoring/blob/main/config_1.png" alt="1313">
-<img src="https://github.com/wallacebrf/synology_UPS_Shutdown-Monitoring/blob/main/config_2.png" alt="1314">
+<img src="" alt="1313">
+<img src="" alt="1314">
 
-1. now that the files are where they need to be, using a browser go to the "server2_config.php" page. when the page loads for the first time, it will automatically create a "system_config2.txt" in the config directory. the values will all be default values and must be configured. 
-2. ensure the script is enabled
-3. configure maximum CPU, disk, and GPU temperatures (In F, not C)
-4. configure email settings, the destination email address, the from email address, and the frequency in which notification emails will be re-sent if the issue still persists
-5. check what types of data is to be collected from the NAS
-6. enter the details for influxDB.
---> for influxdb 2, the "database" will be the randomly generated string identifying the data bucket, for example "a6878dc5c298c712"
---> for influxdb 2, the "User Name of Influx DB" can be left as the default value
---> for influxdb 2, the "Password" is the API access key / Authorization Token. 
-7. on the NAS, go to Control Panel --> Terminal & SNMP --> SNMP and configure the SNMP version 3 settings. 
-8. configure the SNMP settings for the synology NAS. these settings must match the settings the NAS has been configured to use. 
+
 
 
 ### Configuration of crontab
