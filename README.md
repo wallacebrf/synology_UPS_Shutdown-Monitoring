@@ -193,20 +193,91 @@ This project is written around a Synology NAS and their DSM specific SNMP OIDs a
 
 ### Installation
 
+1. Create the following directories on the NAS
+
+```
+1. %PHP_Server_Root%/config
+2. %PHP_Server_Root%/logging
+3. %PHP_Server_Root%/logging/notifications
+```
+
+note: ```%PHP_Server_Root%``` is what ever shred folder location the PHP web server root directory is configured to be.
+
+2. Place the ```functions.php``` file in the root of the PHP web server running on the NAS
+
+3. Place the ```server_APC_UPS_Monitor.sh``` file in the ```/logging``` directory
+
+4. Place the ```server2_UPS_config.php``` file in the ```/config``` directory
+
+5. Create a scheduled task on boot up in Synology Task Scheduler to add the following line
+
+		#mount -t tmpfs -o size=1% ramdisk $notification_file_location
+
+		#where "$notification_file_location" is the location created above ```%PHP_Server_Root%/logging/notifications```
 
 
-### Configuration 
+### Configuration "server2_UPS_config.php"
+
+1. open the ```server2_UPS_config.php``` file in a text editor to edit the following lines
+```
+$config_file="/volume1/web/config/config_files/config_files_local/server2_UPS_monitor_config2.txt";
+$use_login_sessions=true; //set to false if not using user login sessions
+$form_submittal_destination="index.php?page=6&config_page=server2_ups_monitor"; //set to the destination the HTML form submittal should be directed to
+$page_title="Server2 Network UPS Shutdown Monitoring Configuration Settings";
+```
+2. set "config_file" to where the script's configuration file will be stored. this must be the same as used in the .sh script file. 
+3. if the PHP web server uses user log in sessions then set "use_login_sessions" to true
+4. "form_submittal_destination" controls what web-page is processing the PHP configuration page data. this can be made to be the "server2_UPS_config.php" file itself, or if the configuration file is embedded in another file using "include_once" so similar, then that file will need to be used
+5. "page_title" controls what the title of the PHP page will be when loaded into a browser. 
 
 
+### Configuration "server_APC_UPS_Monitor.sh"
+
+1. open the ```server_APC_UPS_Monitor.sh``` file in a text editor to edit the following lines 
+
+```
+nas_url="localhost" #needed to collect the name of the NAS running this script
+config_file_location="/volume1/web/config/config_files/config_files_local"
+notification_file_location="/volume1/web/logging/notifications"
+lock_file_name="server_APC_UPS_Monitor2.lock"
+
+```
+
+2. configure "nas_url" to be the URL of the NAS the script is running on and that the script will shutdown if needed
+3. set the "config_file_location" to be where the configuration file will be stored. this must be the same as used in the PHP file. 
+4. set the location of the notification files
+5. set the file name as desired for the lock file "lock_file_name". The lock file is used to prevent more than once instance of the script from running. 
 
 
 ### Configuration of required settings
 
-<img src="" alt="1313">
-<img src="" alt="1314">
+<img src="https://raw.githubusercontent.com/wallacebrf/synology_UPS_Shutdown-Monitoring/main/UPS_Config_page_part1.png" alt="1313">
+<img src="https://raw.githubusercontent.com/wallacebrf/synology_UPS_Shutdown-Monitoring/main/UPS_Config_page_part2.png" alt="1314">
 
+once the files are copied to the NAS and configured, using a web browser, navigate to where the "server2_UPS_config.php" file is located
 
+when the web-page loads, it will automatically create a configuration file and populate it with default values. 
 
+edit the values as desired. 
+
+1. ensure the script is enabled
+2. configure at what point the NAS will be commanded to shutdown. the NAs will be shutdown when there is less than the configured number of minutes remaining. ensure there are at least 2-3 minutes of additional to allow the system to actually gracefully shutdown
+3. what input voltage is the UPS configured to transition from AC power to battery?
+4. who will receive alert email notifications and who will the email be from?
+5. how often will be script be executed per minute? it is recommended to perform 3-4 polls per minute so the system can react to changes in the UPS fast enough
+6. enable or disable NAS shutdown if network communications with the UPS fail
+--> how long to wait until NAS is shutdown
+7. if PLEX is installed on the NAS (not docker, but the native version) then give the IP address of PLEX
+8. if PLEX is installed, what volume is it installed on?
+9. ensure SNMP version 3 is enabled and configured on the NAS and ensure the settings match
+10. ensure SNMP version 3 is enabled on the network management card and ensure the settings match
+11. if a PDU is available, configure the PDU for SNMP version 3 and ensure the settings match 
+12. if outlet level load shedding is desired, enable the setting
+12 a. how many minutes prior to the NAS being commanded to shutdown shall the outlet load shedding occur?
+12 b. select the desired outlets that will be turned off during the load shed. all other outlets will remain on during load shedding
+13. if it is desired to turn off the output of the UPS (if it has switch outlets) enable the setting. 
+13a. configure how many minutes after the NAS is commanded to turn off will be UPS turn off its outlets. ensure enough time is allowed to allow the NAS to gracefully shutdown. 
+NOTE: if the outlets on the UPS are configured to turn off, they will NOT turn back on when power is restored. 
 
 ### Configuration of crontab
 
