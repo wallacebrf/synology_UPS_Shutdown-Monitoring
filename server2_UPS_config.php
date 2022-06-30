@@ -1,4 +1,6 @@
 <?php
+//Version 6/30/2022
+//By Brian Wallace
 //Note Ensure the location and file name of the configuration file matches the values in the server_APC_UPS_Monitor.sh script 
 /*This web administration page allows for the configuration of all settings used in the server_APC_UPS_Monitor.sh script file
 ensure to visit this web page and configure all settings as required prior to running the server_APC_UPS_Monitor.sh script for the first time. 
@@ -59,7 +61,7 @@ $UPS_PDU_AuthPass1_error="";
 $UPS_PDU_PrivPass2_error="";
 $UPS_PDU_snmp_user_error="";
 $generic_error="";
-
+$from_email_error="";
 	
 if(isset($_POST['submit_ups_monitor'])){
 	if (file_exists("$config_file")) {
@@ -179,8 +181,10 @@ if(isset($_POST['submit_ups_monitor'])){
 	[$UPS_comm_loss_shutdown_enable, $generic_error] = test_input_processing($_POST['UPS_comm_loss_shutdown_enable'], "", "checkbox", 0, 0);
 	 
 	[$UPS_url, $UPS_monitor_url_error] = test_input_processing($_POST['UPS_url'], $pieces[4], "ip", 0, 0);
+	
+	[$from_email, $from_email_error] = test_input_processing($_POST['from_email'], $pieces[46], "email", 0, 0);
 	  
-	$put_contents_string="".$UPS_monitor_runtime.",".$UPS_monitor_voltage.",".$ups_monitor_email.",".$ups_monitor_capture_interval.",".$UPS_url.",".$UPS_monitor_enable.",".$UPS_comm_loss_shutdown_interval.",".$UPS_comm_loss_shutdown_enable.",".$UPS_PDU_IP.",".$UPS_PLEX_IP.",".$UPS_plex_installed_volume.",".$UPS_load_shed_early_time.",".$UPS_load_shed_control.",".$UPS_Syno_AuthPass1.",".$UPS_Syno_PrivPass2.",".$UPS_Syno_snmp_user.",".$UPS_Syno_snmp_auth_protocol.",".$UPS_Syno_snmp_privacy_protocol.",".$UPS_UPS_AuthPass1.",".$UPS_UPS_PrivPass2.",".$UPS_UPS_snmp_user.",".$UPS_UPS_snmp_auth_protocol.",".$UPS_UPS_snmp_privacy_protocol.",".$UPS_PDU_AuthPass1.",".$UPS_PDU_PrivPass2.",".$UPS_PDU_snmp_user.",".$UPS_PDU_snmp_auth_protocol.",".$UPS_PDU_snmp_privacy_protocol.",".$UPS_outlet_1_load_shed_yes_no.",".$UPS_outlet_2_load_shed_yes_no.",".$UPS_outlet_3_load_shed_yes_no.",".$UPS_outlet_4_load_shed_yes_no.",".$UPS_outlet_5_load_shed_yes_no.",".$UPS_outlet_6_load_shed_yes_no.",".$UPS_outlet_7_load_shed_yes_no.",".$UPS_outlet_8_load_shed_yes_no.",".$UPS_outlet_9_load_shed_yes_no.",".$UPS_outlet_10_load_shed_yes_no.",".$UPS_outlet_11_load_shed_yes_no.",".$UPS_outlet_12_load_shed_yes_no.",".$UPS_outlet_13_load_shed_yes_no.",".$UPS_outlet_14_load_shed_yes_no.",".$UPS_outlet_15_load_shed_yes_no.",".$UPS_outlet_16_load_shed_yes_no.",".$UPS_ups_outlet_group_turn_off_enable.",".$UPS_ups_outlet_group_turn_off_delay."";
+	$put_contents_string="".$UPS_monitor_runtime.",".$UPS_monitor_voltage.",".$ups_monitor_email.",".$ups_monitor_capture_interval.",".$UPS_url.",".$UPS_monitor_enable.",".$UPS_comm_loss_shutdown_interval.",".$UPS_comm_loss_shutdown_enable.",".$UPS_PDU_IP.",".$UPS_PLEX_IP.",".$UPS_plex_installed_volume.",".$UPS_load_shed_early_time.",".$UPS_load_shed_control.",".$UPS_Syno_AuthPass1.",".$UPS_Syno_PrivPass2.",".$UPS_Syno_snmp_user.",".$UPS_Syno_snmp_auth_protocol.",".$UPS_Syno_snmp_privacy_protocol.",".$UPS_UPS_AuthPass1.",".$UPS_UPS_PrivPass2.",".$UPS_UPS_snmp_user.",".$UPS_UPS_snmp_auth_protocol.",".$UPS_UPS_snmp_privacy_protocol.",".$UPS_PDU_AuthPass1.",".$UPS_PDU_PrivPass2.",".$UPS_PDU_snmp_user.",".$UPS_PDU_snmp_auth_protocol.",".$UPS_PDU_snmp_privacy_protocol.",".$UPS_outlet_1_load_shed_yes_no.",".$UPS_outlet_2_load_shed_yes_no.",".$UPS_outlet_3_load_shed_yes_no.",".$UPS_outlet_4_load_shed_yes_no.",".$UPS_outlet_5_load_shed_yes_no.",".$UPS_outlet_6_load_shed_yes_no.",".$UPS_outlet_7_load_shed_yes_no.",".$UPS_outlet_8_load_shed_yes_no.",".$UPS_outlet_9_load_shed_yes_no.",".$UPS_outlet_10_load_shed_yes_no.",".$UPS_outlet_11_load_shed_yes_no.",".$UPS_outlet_12_load_shed_yes_no.",".$UPS_outlet_13_load_shed_yes_no.",".$UPS_outlet_14_load_shed_yes_no.",".$UPS_outlet_15_load_shed_yes_no.",".$UPS_outlet_16_load_shed_yes_no.",".$UPS_ups_outlet_group_turn_off_enable.",".$UPS_ups_outlet_group_turn_off_delay.",".$from_email."";
 		  
 	file_put_contents("$config_file",$put_contents_string );
 		  
@@ -234,6 +238,7 @@ if(isset($_POST['submit_ups_monitor'])){
 		$UPS_outlet_16_load_shed_yes_no=$pieces[43];
 		$UPS_ups_outlet_group_turn_off_enable=$pieces[44];
 		$UPS_ups_outlet_group_turn_off_delay=$pieces[45];
+		$from_email=$pieces[46];
 	}else{
 		$UPS_monitor_runtime=5;
 		$UPS_monitor_voltage=105;
@@ -281,7 +286,8 @@ if(isset($_POST['submit_ups_monitor'])){
 		$UPS_outlet_16_load_shed_yes_no=0;
 		$UPS_ups_outlet_group_turn_off_enable=0;
 		$UPS_ups_outlet_group_turn_off_delay=240;
-		$put_contents_string="".$UPS_monitor_runtime.",".$UPS_monitor_voltage.",".$ups_monitor_email.",".$ups_monitor_capture_interval.",".$UPS_url.",".$UPS_monitor_enable.",".$UPS_comm_loss_shutdown_interval.",".$UPS_comm_loss_shutdown_enable.",".$UPS_PDU_IP.",".$UPS_PLEX_IP.",".$UPS_plex_installed_volume.",".$UPS_load_shed_early_time.",".$UPS_load_shed_control.",".$UPS_Syno_AuthPass1.",".$UPS_Syno_PrivPass2.",".$UPS_Syno_snmp_user.",".$UPS_Syno_snmp_auth_protocol.",".$UPS_Syno_snmp_privacy_protocol.",".$UPS_UPS_AuthPass1.",".$UPS_UPS_PrivPass2.",".$UPS_UPS_snmp_user.",".$UPS_UPS_snmp_auth_protocol.",".$UPS_UPS_snmp_privacy_protocol.",".$UPS_PDU_AuthPass1.",".$UPS_PDU_PrivPass2.",".$UPS_PDU_snmp_user.",".$UPS_PDU_snmp_auth_protocol.",".$UPS_PDU_snmp_privacy_protocol.",".$UPS_outlet_1_load_shed_yes_no.",".$UPS_outlet_2_load_shed_yes_no.",".$UPS_outlet_3_load_shed_yes_no.",".$UPS_outlet_4_load_shed_yes_no.",".$UPS_outlet_5_load_shed_yes_no.",".$UPS_outlet_6_load_shed_yes_no.",".$UPS_outlet_7_load_shed_yes_no.",".$UPS_outlet_8_load_shed_yes_no.",".$UPS_outlet_9_load_shed_yes_no.",".$UPS_outlet_10_load_shed_yes_no.",".$UPS_outlet_10_load_shed_yes_no.",".$UPS_outlet_12_load_shed_yes_no.",".$UPS_outlet_13_load_shed_yes_no.",".$UPS_outlet_14_load_shed_yes_no.",".$UPS_outlet_15_load_shed_yes_no.",".$UPS_outlet_16_load_shed_yes_no.",".$UPS_ups_outlet_group_turn_off_enable.",".$UPS_ups_outlet_group_turn_off_delay."";
+		$from_email="admin@admin.com";
+		$put_contents_string="".$UPS_monitor_runtime.",".$UPS_monitor_voltage.",".$ups_monitor_email.",".$ups_monitor_capture_interval.",".$UPS_url.",".$UPS_monitor_enable.",".$UPS_comm_loss_shutdown_interval.",".$UPS_comm_loss_shutdown_enable.",".$UPS_PDU_IP.",".$UPS_PLEX_IP.",".$UPS_plex_installed_volume.",".$UPS_load_shed_early_time.",".$UPS_load_shed_control.",".$UPS_Syno_AuthPass1.",".$UPS_Syno_PrivPass2.",".$UPS_Syno_snmp_user.",".$UPS_Syno_snmp_auth_protocol.",".$UPS_Syno_snmp_privacy_protocol.",".$UPS_UPS_AuthPass1.",".$UPS_UPS_PrivPass2.",".$UPS_UPS_snmp_user.",".$UPS_UPS_snmp_auth_protocol.",".$UPS_UPS_snmp_privacy_protocol.",".$UPS_PDU_AuthPass1.",".$UPS_PDU_PrivPass2.",".$UPS_PDU_snmp_user.",".$UPS_PDU_snmp_auth_protocol.",".$UPS_PDU_snmp_privacy_protocol.",".$UPS_outlet_1_load_shed_yes_no.",".$UPS_outlet_2_load_shed_yes_no.",".$UPS_outlet_3_load_shed_yes_no.",".$UPS_outlet_4_load_shed_yes_no.",".$UPS_outlet_5_load_shed_yes_no.",".$UPS_outlet_6_load_shed_yes_no.",".$UPS_outlet_7_load_shed_yes_no.",".$UPS_outlet_8_load_shed_yes_no.",".$UPS_outlet_9_load_shed_yes_no.",".$UPS_outlet_10_load_shed_yes_no.",".$UPS_outlet_10_load_shed_yes_no.",".$UPS_outlet_12_load_shed_yes_no.",".$UPS_outlet_13_load_shed_yes_no.",".$UPS_outlet_14_load_shed_yes_no.",".$UPS_outlet_15_load_shed_yes_no.",".$UPS_outlet_16_load_shed_yes_no.",".$UPS_ups_outlet_group_turn_off_enable.",".$UPS_ups_outlet_group_turn_off_delay.",".$from_email."";
 		  
 		file_put_contents("$config_file",$put_contents_string );
 	}
@@ -313,6 +319,7 @@ print "		</td>
 					<p>UPS Runtime System Shutdown Threshold [Minuets]: <input type=\"text\" name=\"UPS_monitor_runtime\" value=".$UPS_monitor_runtime."><font size=\"1\">Lowest UPS Runtime Remaining Before NAS System Shuts Down</font> ".$UPS_monitor_runtime_error."</p>
 					<p>UPS Minimum Input Voltage [Volts]: <input type=\"text\" name=\"UPS_monitor_voltage\" value=".$UPS_monitor_voltage."><font size=\"1\">Ensure it is the same as the UPS activation voltage Configured on the Management Card</font> ".$UPS_monitor_voltage_error."</p>
 					<p>Alert Email Recipient: <input type=\"text\" name=\"ups_monitor_email\" value=".$ups_monitor_email."><font size=\"1\">Separate Addresses by a semicolon</font> ".$ups_monitor_email_error."</p>
+					<p>From Email: <input type=\"text\" name=\"from_email\" value=".$from_email."> ".$from_email_error."</p>
 					<p>UPS Status Polls Per Minute : <select name=\"ups_monitor_capture_interval\">";
 					if ($ups_monitor_capture_interval==10){
 						print "<option value=\"10\" selected>6</option>
