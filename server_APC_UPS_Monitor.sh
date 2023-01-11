@@ -1,5 +1,5 @@
 #!/bin/bash
-VERSION="1/6/2023"
+VERSION="1/11/2023"
 #By Brian Wallace
 
 #This script pulls data from an APC UPS with a Network Management Card 2 installed. if the UPS does not have a network management cad installed, this script cannot interface with a USB connected UPS. 
@@ -152,6 +152,7 @@ shutdown_email_contents="shutdown_email_contents.txt"
 pdu_outlet_failure_email_last_sent_tracker="pdu_outlet_failure_email_last_sent_tracker.txt"
 sendmail_installed=0
 ups_email_delay=2 #number of minutes to wait between UPS notification emails
+UPS_monitor_Heartbeat="UPS_monitor_Heartbeat.txt"
 
 
 server_type=1 #1=server2, 2=server_NVR, 3=server_plex
@@ -1952,6 +1953,16 @@ if [ $UPS_Shutdown -eq 0 ]; then
 						#####################################################################
 						
 						echo "UPS OK, UPS Voltage: $input_voltage VAC, Battery Capacity: $battery_capacity %, Runtime Remaining ${array[0]} days || ${array[1]} hours || ${array[2]} minutes || ${array[3]} seconds"
+						
+						#once per hour save a "heart beat" date value to file so we can monitor that the script is operating properly
+						current_time_min=$(date +"%M")
+						current_time_sec=$(date +"%S")
+						
+						if [ "$current_time_min" == "00" ]; then
+							if [[ $current_time_sec < 15 ]]; then
+								echo "$current_time" > $notification_file_location/$UPS_monitor_Heartbeat
+							fi
+						fi
 						
 						#if the UPS had previously been running on battery power, we need to save the fact that it is now on AC power
 						if [ $UPS_on_battery -eq 1 ]
