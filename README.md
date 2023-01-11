@@ -307,6 +307,53 @@ This script can be run through synology Task Scheduler. However it has been obse
 	#add the following line: 
 	```	*	*	*	*	*	root	$path_to_file/$filename```
 	#details on crontab can be found here: https://man7.org/linux/man-pages/man5/crontab.5.html
+	
+	
+	
+### Example Email Notifications
+```
+Title: Server2 Operating on Battery Power
+11:58:23 - Warning Server2 is Operating on Battery Power for 0:0:00:00.00. If power is not returned soon, the system will shutdown if the runtime drops below 15 minutes. UPS Voltage: 0 VAC, Battery Capacity: 100 %, Runtime Remaining: 0 Hours : 19 Minutes : 59 Seconds
+```
+
+```
+Title: Server2 has turned off PDU outlet #14
+11:43:53 - ALERT Server2 has turned off PDU outlet #14 due to a load shed event caused by low UPS battery life
+```
+
+```
+Title: Server2 has turned ON PDU outlet #14
+11:48:56 - ALERT Server2 has turned ON PDU outlet #14 now that UPS power has been restored
+```
+
+```
+Title: CRITICAL - Server2 Shutting Down Due to Limited Battery Runtime
+11:46:46 - CRITICAL - Server2 is shutting down due to UPS runtime remaining on battery being less than 15 minutes. The UPS has been running off battery power for 0:0:00:00.00 minuets. The UPS Voltage: 0 VAC, Battery Capacity: 100 %, Runtime Remaining: 0 Hours : 14 Minutes : 59 Seconds
+```
+
+```
+Title: ALERT - Server2 UPS Power has Been Restored
+11:42:55 - ALERT - Server2 - UPS input power restored, UPS no longer operating on battery power -- UPS Voltage: 120 VAC, Battery Capacity: 100 %, Runtime Remaining: 0 Hours : 19 Minutes : 59 Seconds
+```
+
+```
+Title: ALERT - Server2 Cannot Talk to UPS
+11:19:14 - ALERT - Server2 could NOT access the UPS unit at address 192.168.20.13 for the last 2 minutes
+```
+
+```
+Title: ALERT - Server2 UPS Comms have been restored
+11:23:12 - ALERT - Server2 - UPS has restored communications with UPS at 192.168.20.13
+```
+
+```
+Title: Warning UPS Monitoring Failed - Configuration or username/password credential file is missing
+12:16:39 - Warning UPS Monitoring Failed - Configuration file is missing
+```
+
+
+
+
 
 
 <p align="right">(<a href="#top">back to top</a>)</p>
