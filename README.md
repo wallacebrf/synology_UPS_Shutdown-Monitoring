@@ -15,7 +15,7 @@
 <h3 align="center">Synology APC UPS SNMP Monitor and NAS Shutdown</h3>
 
   <p align="center">
-    This project is comprised of a shell script that runs once per minute collecting data from a APC Network Management Card and if battery is low will shutdown the NAS 
+    This project is comprised of a shell script that runs once per minute collecting data from a APC Network Management Card to shutdown the NAS or perform load shedding of outlets and services 
     <br />
     <a href="https://github.com/wallacebrf/synology_UPS_Shutdown-Monitoring"><strong>Explore the docs »</strong></a>
     <br />
@@ -61,6 +61,29 @@
 
 This script pulls data from an APC UPS with a Network Management Card version 2 or version 3 installed. if the UPS does not have a network management cad installed, this script cannot interface with a USB connected UPS.  
 
+The script can perform a system shutdown during a power outage using the following triggers
+
+1.) run time remaining only
+2.) time on battery only
+3.) run time remaining or battery voltage
+4.) time on battery or battery voltage
+5.) battery voltage only
+
+in addition, for all five options, if the battery temperature exceeds a configurable threshold, then the system will also be commanded to shutdown regardless of the run time or battery voltage. this is to prevent damage to the battery. 
+
+The voltage threshold and the temperature threshold can be configured in tenths of a volt/degree respectively. 
+
+Depending on the model of the UPS, it may have a 12-volt, 24-volt, 48-volt, or even higher battery voltage. Please note this script currently supports up to 48 volt batteries. 
+when a 12 volt battery is fully charged, it's voltage will typically be 13.0 volts (or possibly higher) and the recommended 50% "state of discharge" of lead acid batteries is around 12.0 volts. 
+
+As such, the lowest recommended shutdown voltages for the three types of batteries are:
+
+1.) 12-volt systems: 12.0 volts
+2.) 24-volt systems: 24.0 volts
+3.) 48-volt systems: 48 volts
+
+Lower voltages can be used however going below 12-volts puts the battery at more stress. Never discharge a 12-volt battery below 10.5 volts. this is important as the system will take several minutes to shutdown and during this time the battery voltage will continue to drop. It is recommended to perform battery "run time calibrations" to see how quickly the battery voltage trips over a period of time. failure to set the battery voltage correctly may cause the UPS to run out of power before the system has had a chance to fully shut down. 
+
 ***************************************************
 Power Distribution Unit (PDU) Outlet Control load shedding:
 ***************************************************
@@ -71,9 +94,24 @@ If a different PDU model or manufacture is utilized the script will not work as 
 
 If PDU load shedding is desired and the PDU is a cyberpower pdu81xxx series unit, the PDU must have SNMP enabled for communications and control. The SNMP settings used in the PDU will need to be entered into the web administration page to allow the script to talk to the PDU. 
 
-The amount of time the load shedding occurs is configurable through the web administration page. This time is added onto the run time where the NAS is commanded to shut down. As an example if the shutdown run time is 15 minutes and the load shedding is configured for 5 minutes, the load shedding actions will occur when run time is less than 20 minuets. 
+PDU load shedding can be enabled or disabled independently of Synology Surveillance Station and PLEX load shedding. How load shedding occurs is configurable through the web administration page. There are five options for load shed triggering
 
-Outlets commanded off during a load shed event will turn back on when UPS power is restored ONLY IF the power is restored before the system is commanded to shutdown. If the system is commanded to shutdown, when the system is restarted, the PDU outlets commanded to turn off during load shed will remain off and will need to be manually re-enabled. This is to prevent constant power on/off fluctuations from causing the system to continuously turn the outlets on and off. 
+1.) run time remaining only
+2.) time on battery only
+3.) run time remaining or battery voltage
+4.) time on battery or battery voltage
+5.) battery voltage only
+
+the load shed battery voltage threshold and or time duration is configured independently from the shutdown settings. 
+
+the lowest load shed battery voltage recommended based on battery voltage is:
+1.) 12-volt systems: 12.2 to 12.3 volts
+2.) 24-volt systems: 24.5 to 24.7 volts
+3.) 48-volt systems: 49 to 49.1 volts
+
+Lower voltages can be used however going below 12-volts puts the battery at more stress. Never discharge a 12-volt battery below 10.5 volts. this is important as the system will take several minutes to shutdown and during this time the battery voltage will continue to drop. It is recommended to perform battery "run time calibrations" to see how quickly the battery voltage trips over a period of time. failure to set the battery voltage correctly may cause the UPS to run out of power before the system has had a chance to fully shut down.
+
+If the system is commanded to shutdown, when the system is restarted, the PDU outlets commanded to turn off during load shed will turn back on.
 
 
 ***************************************************
@@ -81,9 +119,9 @@ Synology Surveillance Station Application Shutdown Load Shedding:
 ***************************************************
 The script can terminate the Synology surveillance station application which can draw significant power from the CPU and GPU (GPU is used in the DVA series units)
 
-The amount of time the load shedding occurs is configurable through the web administration page and will occur at the same time as a PDU load shed as explained above. 
+Synology Surveillance Station load shedding can be enabled or disabled independently of PDU and PLEX load shedding. All load shedding uses the same trigger and threshold values as detailed in the PDU explanation above. 
 
-Surveillance Station will be restarted when UPS power is restored ONLY IF the power is restored before the system is commanded to shutdown. If the system is commanded to shutdown, when the system is restarted, surveillance station will remain off and will need to be manually re-enabled. 
+Surveillance Station will be restarted when UPS power is restored. 
 
 
 ***************************************************
@@ -91,9 +129,9 @@ PLEX Media Server Application Shutdown Load Shedding:
 ***************************************************
 The script can terminate any active PLEX streams which if performing transcoding can use high levels of CPU power and wattage. 
 
-The amount of time the load shedding occurs is configurable through the web administration page. 
+PLEX load shedding can be enabled or disabled independently of PDU and Synology Surveillance Station load shedding. All load shedding uses the same trigger and threshold values as detailed in the PDU explanation above. 
 
-PLEX will be restarted when UPS power is restored ONLY IF the power is restored before the system is commanded to shutdown. If the system is commanded to shutdown, when the system is restarted, PLEX will remain off and will need to be manually re-enabled. 
+PLEX will be restarted when UPS power is restored. 
 	
 
 ***************************************************
@@ -128,13 +166,13 @@ This project is written around a Synology NAS and their DSM specific SNMP OIDs a
 
 1.) This script is designed to be executed every 60 seconds
 
-2.) This script requires the installation of Synology MailPlus server package in package center in order to send emails. If it is not installed the script will still operate as only the notification emails functions will be skipped. 
+2.) This script recommends the installation of Synology MailPlus server package in package center in order to send emails. If Synology MailPlus server package is not installed, the script can still send emails using the Synology email client settings for notifications in the Synology Control Panel. 
 
 	The mail plus server must be properly configured to relay received messages to another email account. This readme does not go into detail on that configuration process. 
 	
 3.) This script is Dependent on a docker container for SNMP_SET commands using the "elcolio/net-snmp" container located here: https://hub.docker.com/r/elcolio/net-snmp
 
-	This is required as the synology system does not contain the snmp_set commands. The set command is used to control the PDU outlets and to command the UPS to shutdown
+	This is required as the Synology system does not contain the snmp_set commands. The set command is used to control the PDU outlets and to command the UPS to shutdown
 	the container does not always run, it is run once when a SET command needs to be executed and as such can remain in the "off" state within docker.
 	
 4.) This script only supports SNMP V3. This is because lower versions are less secure especially when using the set commands that have the ability to remove power to the systems
@@ -191,12 +229,13 @@ where "$notification_file_location" is the location created above ```%PHP_Server
 
 1. open the ```server2_UPS_config.php``` file in a text editor to edit the following lines
 ```
-$config_file="/volume1/web/config/config_files/config_files_local/server2_UPS_monitor_config2.txt";
+$config_file_location="/volume1/web/config/config_files/config_files_local";
+$config_file_name="server2_UPS_monitor_config2.txt";
 $use_login_sessions=true; //set to false if not using user login sessions
-$form_submittal_destination="index.php?page=6&config_page=server2_ups_monitor"; //set to the destination the HTML form submittal should be directed to
-$page_title="Server2 Network UPS Shutdown Monitoring Configuration Settings";
+$form_submittal_destination="index.php?page=6&config_page=server2_ups_monitor";
+$page_title="Server2 APC Network Management Card UPS Monitoring and Shutdown/Load Shed Configuration Settings";
 ```
-2. Set "config_file" to where the script's configuration file will be stored. This MUST be the same as used in the .sh script file ```config_file_location``` configured below. 
+2. Set ```config_file_location``` and ```config_file_name``` to where the script's configuration file will be stored. This MUST be the same as used in the .sh script file ```configuration_file``` and ```config_file_location``` configured below. 
 3. If the PHP web server uses user log in sessions then set "use_login_sessions" to true, otherwise set to false. If set to true, when a user accesses the page and does not have a valid sesson, they will be redirected to ```login.php``` which is NOT included in this repository. Update accordingly to match your environment. 
 4. "form_submittal_destination" controls what web-page is processing the PHP configuration page data. If accessing the ```server2_UPS_config.php``` directly in the web browser URL bar, set this variable to "server2_UPS_config.php", or if the configuration .php file is embedded in another file using "include_once" so similar, then that file will need to be used as it is currently in the .php file. 
 5. "page_title" controls what the title of the PHP page will be when loaded into a browser. 
@@ -215,10 +254,10 @@ to instead read
 
 ```
 nas_url="localhost" #needed to collect the name of the NAS running this script
+configuration_file="server2_UPS_monitor_config2.txt"
 config_file_location="/volume1/web/config/config_files/config_files_local"
 notification_file_location="/volume1/web/logging/notifications"
 lock_file_name="server_APC_UPS_Monitor2.lock"
-
 ```
 
 2. Configure "nas_url" to be the URL of the NAS the script is running on and that the script will shutdown if needed
