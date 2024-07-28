@@ -209,7 +209,7 @@ from_email_address="email@email.com"
 
 UPS_shutdown_status_file="UPS_shutdown_status.txt"
 UPS_load_shed_status_file="UPS_load_shed_status.txt"
-ups_coms_fail_tracker="ups_coms_fail_tracker_debug.txt"
+ups_coms_fail_tracker="ups_coms_fail_tracker.txt"
 ups_email_notification_last_sent_tracker="ups_email_notification_last_sent_tracker.txt"
 ups_email_notification_file="ups_email_notification_file.txt"
 shutdown_email_contents="shutdown_email_contents.txt"
@@ -231,7 +231,7 @@ if [ $server_type -eq 1 ]; then
 	configuration_file="server2_UPS_monitor_config2.txt"
 	config_file_location="/volume1/web/config/config_files/config_files_local"
 	notification_file_location="/volume1/web/logging/notifications"
-	lock_file_name="server_APC_UPS_Monitor2_debug.lock"
+	lock_file_name="server_APC_UPS_Monitor2.lock"
 fi
 
 if [ $server_type -eq 2 ]; then
