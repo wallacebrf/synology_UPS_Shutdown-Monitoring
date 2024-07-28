@@ -306,33 +306,36 @@ to be Completed
 
 ### Configuration of required settings in the web-administration page
 
-<img src="https://raw.githubusercontent.com/wallacebrf/synology_UPS_Shutdown-Monitoring/main/UPS_Config_page_part1.png" alt="1313">
-<img src="https://raw.githubusercontent.com/wallacebrf/synology_UPS_Shutdown-Monitoring/main/UPS_Config_page_part2.png" alt="1314">
+<img src="https://raw.githubusercontent.com/wallacebrf/synology_UPS_Shutdown-Monitoring/main/UPS_monitor_settings.png" alt="1313">
 
 Once the files are copied to the NAS, properly edited, and device settings are configured as required above, using a web browser, navigate to where the "server2_UPS_config.php" file is located. 
 
-when the web-page loads, it will automatically create a configuration file and populate it with default values. If an error occurs indicating permissions are denied or ther write errors, ensure the Synology http user permissions were configured correctly. 
+when the web-page loads, it will automatically create a configuration file and populate it with default values. If an error occurs indicating permissions are denied or the write errors, ensure the Synology http user permissions were configured correctly. 
+
+Note: for the 7/26/24 release, if upgrading from a previous version, the existing configuration file will be backed up and additional configuration settings will be saved to the config file. all of the new parameters that need configuration will be highlighted in red. 
 
 edit the values as desired. 
 
 1. Ensure the script is enabled
-2. Configure at what point the NAS will be commanded to shutdown. The NAS will be shutdown when there is less than the configured number of minutes remaining. Ensure there are at least 3-5 minutes of run time to allow the system to actually gracefully shutdown. My personal DS920 can take up to 5 minutes to shutdown completely. 
+2. How often will be script be executed per minute? it is recommended to perform 3-4 polls per minute so the system can react to changes in the UPS fast enough
 3. What input voltage is the UPS configured to transition from AC power to battery? Ensure this value matches the value configured in the Network Management card's interface 
-4. Who will receive alert email notifications and who will the email be from?
-5. How often will be script be executed per minute? it is recommended to perform 3-4 polls per minute so the system can react to changes in the UPS fast enough
-6. Enable or disable NAS shutdown if network communications with the UPS fail
---> how long to wait until NAS is shutdown
-7. if PLEX is installed on the NAS (not docker, but the native version) then give the IP address of PLEX
-8. if PLEX is installed, what volume is it installed on?
-9. ensure SNMP version 3 is enabled and configured on the NAS and ensure the settings match between what DSM was configured and what is entered on this web-administration page 
-10. ensure SNMP version 3 is enabled on the network management card and ensure the settings match between what the APC NMC was configured and what is entered on this web-administration page. 
-11. if a PDU is available, configure the PDU for SNMP version 3 and ensure the settings match between what the PSU is configured and what is entered on this web-administration page 
-12. if outlet level load shedding is desired, enable the setting
-12 a. how many minutes prior to the NAS being commanded to shutdown shall the outlet load shedding occur?
-12 b. select the desired outlets that will be turned off during the load shed. all other outlets will remain on during load shedding
-13. if it is desired to turn off the output of the UPS (if it has switch outlets) enable the setting. 
-13a. configure how many minutes after the NAS is commanded to turn off will be UPS turn off its outlets. ensure enough time is allowed to allow the NAS to gracefully shutdown. 
-NOTE: if the outlets on the UPS are configured to turn off, they will NOT turn back on when power is restored. 
+4. Shutdown Trigger. This can be either 1.) ```Run Time Remaining``` 2.) ```Time On Battery``` 3.) ```Run Time Remaining OR Battery Voltage``` 4.) ```Time On Battery OR Battery Voltage``` 5.) ```Battery Voltage Only```
+5. If the shutdown trigger is either options 3, 4, or 5, configure the desired battery voltage to initiate a shutdown
+6. If the shutdown trigger is either options 1, 2, 3, or 4, configure the time time threshold in hours, minuets, and seconds
+7. Configure the maximum allowable battery temperature while the UPS is operating on battery power
+8. If desired enable and configure the number of hours between when UPS network communications are lost and when the system will be commanded to shutdown while operating on AC power. This is important because if network communications fail between the system and the UPS NMC, this script will not be able to protect the system if power is lost during this time. 
+9. If desired enable and configure the number of minuets after the system is commanded to shutdown that the UPS outlet groups are commanded by the UPS to turn off. This option will only work if the UPS in question supports switched outlet groups. 
+10. If desired enable PDU load shedding and select the outlet(s) desired to be turned off during a load shed event
+11. If desired enable Synology Surveillance Station load shedding
+12. If desired enable PLEX Media Server load shedding. If PLEX load shedding is enabled, ensure the installed volume and IP address settings are also configured
+13. Load Shed Trigger. This can be either 1.) ```Run Time Remaining``` 2.) ```Time On Battery``` 3.) ```Run Time Remaining OR Battery Voltage``` 4.) ```Time On Battery OR Battery Voltage``` 5.) ```Battery Voltage Only```
+14. If the Load Shed trigger is either options 3, 4, or 5, configure the desired battery voltage to initiate a load shed
+15. If the Load Shed trigger is either options 1, 2, 3, or 4, configure the time time threshold in hours, minuets, and seconds
+16. Enable Email notifications and configure from what email address they will show as coming from, and to whom the email notifications will be sent. The duration of time between notifications can also be configured
+17. ensure SNMP version 3 is enabled and configured on the NAS and ensure the settings match between what DSM was configured and what is entered on this web-administration page 
+18. ensure SNMP version 3 is enabled on the network management card and ensure the settings match between what the APC NMC was configured and what is entered on this web-administration page. 
+19. if a PDU is available, configure the PDU for SNMP version 3 and ensure the settings match between what the PSU is configured and what is entered on this web-administration page 
+
 
 ### Perform test run wihh the script in "debug" mode
 to be Completed 
@@ -351,57 +354,6 @@ This script can be run through synology Task Scheduler. However it has been obse
 	```	*	*	*	*	*	root	$path_to_file/$filename```
 	#details on crontab can be found here: https://man7.org/linux/man-pages/man5/crontab.5.html
 	
-	
-	
-### Example Email Notifications
-```
-Title: Server2 Operating on Battery Power
-11:58:23 - Warning Server2 is Operating on Battery Power for 0:0:00:00.00. If power is not returned soon, the system will shutdown if the runtime drops below 15 minutes. UPS Voltage: 0 VAC, Battery Capacity: 100 %, Runtime Remaining: 0 Hours : 19 Minutes : 59 Seconds
-```
-
-```
-Title: Server2 has turned off PDU outlet #14
-11:43:53 - ALERT Server2 has turned off PDU outlet #14 due to a load shed event caused by low UPS battery life
-```
-
-```
-Title: Server2 has turned ON PDU outlet #14
-11:48:56 - ALERT Server2 has turned ON PDU outlet #14 now that UPS power has been restored
-```
-
-```
-Title: CRITICAL - Server2 Shutting Down Due to Limited Battery Runtime
-11:46:46 - CRITICAL - Server2 is shutting down due to UPS runtime remaining on battery being less than 15 minutes. The UPS has been running off battery power for 0:0:00:00.00 minuets. The UPS Voltage: 0 VAC, Battery Capacity: 100 %, Runtime Remaining: 0 Hours : 14 Minutes : 59 Seconds
-```
-
-```
-Title: ALERT - Server2 UPS Power has Been Restored
-11:42:55 - ALERT - Server2 - UPS input power restored, UPS no longer operating on battery power -- UPS Voltage: 120 VAC, Battery Capacity: 100 %, Runtime Remaining: 0 Hours : 19 Minutes : 59 Seconds
-```
-
-```
-Title: ALERT - Server2 Cannot Talk to UPS
-11:19:14 - ALERT - Server2 could NOT access the UPS unit at address 192.168.20.13 for the last 2 minutes
-```
-
-```
-Title: ALERT - Server2 UPS Comms have been restored
-11:23:12 - ALERT - Server2 - UPS has restored communications with UPS at 192.168.20.13
-```
-
-```
-Title: Warning UPS Monitoring Failed - Configuration or username/password credential file is missing
-12:16:39 - Warning UPS Monitoring Failed - Configuration file is missing
-```
-
-
-
-
-
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-
 
 <!-- CONTRIBUTING -->
 ## Contributing
