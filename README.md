@@ -353,7 +353,27 @@ This script can be run through synology Task Scheduler. However it has been obse
 	#add the following line: 
 	```	*	*	*	*	*	root	$path_to_file/$filename```
 	#details on crontab can be found here: https://man7.org/linux/man-pages/man5/crontab.5.html
-	
+
+ ### Configuration of startup script
+on every boot of the system, we need to reset the shutdown tracker and update the UPS heartbeat files. if we do not then the system will either think we are alreadyt shutting down and the scriupt basically stopps protecting the system, or the system will think UPS network comms are still down and shut down the NAS shortly after reboot. 
+
+On synology, go to Control Panel --> Task Scheduler --> create --> Triggered Task --> User-defined script
+
+Ensure the script is eanbled and choose root as the user. Choose "boot-up" for the event
+
+Under task settings tab, enter the following code for the task
+```
+#!/bin/bash
+echo "0,0" > /volume1/web/logging/notifications/UPS_shutdown_status.txt
+current_time=$( date +%s )
+echo "$current_time" > "/volume1/web/logging/notifications/UPS_monitor_Heartbeat.txt"
+```
+
+ensure the ```/volume1/web/logging/notifications/UPS_shutdown_status.txt``` matches the same location as configured inside the ```server_APC_UPS_Monitor.sh``` script
+
+ensure the ```/volume1/web/logging/notifications/UPS_monitor_Heartbeat.txt``` matches the same location as configured inside the ```server_APC_UPS_Monitor.sh``` script
+
+Click OK and when asked enter your admin password
 
 <!-- CONTRIBUTING -->
 ## Contributing
