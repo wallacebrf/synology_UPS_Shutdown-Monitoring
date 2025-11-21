@@ -15,11 +15,11 @@ that file with the above line would include the needed headers, footers, and cal
 //User Defined Variables
 ///////////////////////////////////////////////////
 
-$config_file_location="/volume1/web/config/config_files/config_files_local";
-$config_file_name="server2_UPS_monitor_config2.txt";
+$config_file_location="/var/www/html/config/config_files";
+$config_file_name="server_UPS_monitor_config.txt";
 $use_login_sessions=true; //set to false if not using user login sessions
 $form_submittal_destination="index.php?page=6&config_page=server2_ups_monitor";
-$page_title="Server2 APC Network Management Card UPS Monitoring and Shutdown/Load Shed Configuration Settings";
+$page_title="TrueNAS APC Network Management Card UPS Monitoring and Shutdown/Load Shed Configuration Settings";
 
 
 ///////////////////////////////////////////////////
@@ -71,10 +71,10 @@ $UPS_monitor_voltage_error="";
 $UPS_PDU_IP_error="";
 $UPS_PLEX_IP_error="";
 $UPS_plex_installed_volume_error="";
-$UPS_load_shed_early_time_error="";
-$UPS_Syno_AuthPass1_error="";
-$UPS_Syno_PrivPass2_error="";
-$UPS_Syno_snmp_user_error="";
+$server_name_error="";
+$plex_jelly_fin_installed_on_system_error="";
+$plex_container_name_error="";
+$jellyfin_container_name_error="";
 $UPS_UPS_AuthPass1_error="";
 $UPS_UPS_PrivPass2_error="";
 $UPS_UPS_snmp_user_error="";
@@ -89,6 +89,8 @@ $max_on_battery_temp_error="";
 $load_shed_voltage_error="";
 $ups_email_delay_error="";
 $load_shed_run_time_error="";
+$location_of_email_python_file_error="";
+$surveillance_container_name_error="";
 	
 if(isset($_POST['submit_ups_monitor'])){
 	if (file_exists("$config_file")) {
@@ -161,22 +163,17 @@ if(isset($_POST['submit_ups_monitor'])){
 		$UPS_Syno_snmp_privacy_protocol=$pieces[17];
 	}
 		   
-		   //perform data verification of submitted values
-	if ($_POST['UPS_Syno_snmp_auth_protocol']=="MD5" || $_POST['UPS_Syno_snmp_auth_protocol']=="SHA"){
-		[$UPS_Syno_snmp_auth_protocol, $generic_error] = test_input_processing($_POST['UPS_Syno_snmp_auth_protocol'], $pieces[16], "name", 0, 0);
-	}else{
-		$UPS_Syno_snmp_auth_protocol=$pieces[16];
-	}
+	[$surveillance_container_name, $surveillance_container_name_error] = test_input_processing($_POST['surveillance_container_name'], $pieces[16], "name", 0, 0);
 		   
-	[$UPS_Syno_snmp_user, $UPS_Syno_snmp_user_error] = test_input_processing($_POST['UPS_Syno_snmp_user'], $pieces[15], "name", 0, 0);
+	[$jellyfin_container_name, $jellyfin_container_name_error] = test_input_processing($_POST['jellyfin_container_name'], $pieces[15], "name", 0, 0);
 		
-	[$UPS_Syno_PrivPass2, $UPS_Syno_PrivPass2_error] = test_input_processing($_POST['UPS_Syno_PrivPass2'], $pieces[14], "password", 0, 0);
+	[$plex_container_name, $plex_container_name_error] = test_input_processing($_POST['plex_container_name'], $pieces[14], "name", 0, 0);
 		  
-	[$UPS_Syno_AuthPass1, $UPS_Syno_AuthPass1_error] = test_input_processing($_POST['UPS_Syno_AuthPass1'], $pieces[13], "password", 0, 0);   
+	[$plex_jelly_fin_installed_on_system, $plex_jelly_fin_installed_on_system_error] = test_input_processing($_POST['plex_jelly_fin_installed_on_system'], "", "checkbox", 0, 0);   
 		  
-	[$UPS_load_shed_control, $generic_error] = test_input_processing($_POST['UPS_load_shed_control'], "", "checkbox", 0, 0);   
+	[$location_of_email_python_file, $location_of_email_python_file_error] = test_input_processing($_POST['location_of_email_python_file'], "", "dir", 0, 0);   
 
-	[$UPS_load_shed_early_time, $UPS_load_shed_early_time_error] = test_input_processing($_POST['UPS_load_shed_early_time'], $pieces[11], "numeric", 1, 15);   
+	[$server_name, $server_name_error] = test_input_processing($_POST['server_name'], $pieces[11], "name", 0, 0);   
 		   
 	[$UPS_plex_installed_volume, $UPS_plex_installed_volume_error] = test_input_processing($_POST['UPS_plex_installed_volume'], $pieces[10], "dir", 0, 0);    
 		   
@@ -250,7 +247,7 @@ if(isset($_POST['submit_ups_monitor'])){
 	
 	[$ups_email_delay, $ups_email_delay_error] = test_input_processing($_POST['ups_email_delay'], $pieces[62], "numeric", 0, 59); 	  
 	  
-	$put_contents_string="".$UPS_monitor_runtime.",".$UPS_monitor_voltage.",".$ups_monitor_email.",".$ups_monitor_capture_interval.",".$UPS_url.",".$UPS_monitor_enable.",".$UPS_comm_loss_shutdown_interval.",".$UPS_comm_loss_shutdown_enable.",".$UPS_PDU_IP.",".$UPS_PLEX_IP.",".$UPS_plex_installed_volume.",".$UPS_load_shed_early_time.",".$UPS_load_shed_control.",".$UPS_Syno_AuthPass1.",".$UPS_Syno_PrivPass2.",".$UPS_Syno_snmp_user.",".$UPS_Syno_snmp_auth_protocol.",".$UPS_Syno_snmp_privacy_protocol.",".$UPS_UPS_AuthPass1.",".$UPS_UPS_PrivPass2.",".$UPS_UPS_snmp_user.",".$UPS_UPS_snmp_auth_protocol.",".$UPS_UPS_snmp_privacy_protocol.",".$UPS_PDU_AuthPass1.",".$UPS_PDU_PrivPass2.",".$UPS_PDU_snmp_user.",".$UPS_PDU_snmp_auth_protocol.",".$UPS_PDU_snmp_privacy_protocol.",".$UPS_outlet_1_load_shed_yes_no.",".$UPS_outlet_2_load_shed_yes_no.",".$UPS_outlet_3_load_shed_yes_no.",".$UPS_outlet_4_load_shed_yes_no.",".$UPS_outlet_5_load_shed_yes_no.",".$UPS_outlet_6_load_shed_yes_no.",".$UPS_outlet_7_load_shed_yes_no.",".$UPS_outlet_8_load_shed_yes_no.",".$UPS_outlet_9_load_shed_yes_no.",".$UPS_outlet_10_load_shed_yes_no.",".$UPS_outlet_11_load_shed_yes_no.",".$UPS_outlet_12_load_shed_yes_no.",".$UPS_outlet_13_load_shed_yes_no.",".$UPS_outlet_14_load_shed_yes_no.",".$UPS_outlet_15_load_shed_yes_no.",".$UPS_outlet_16_load_shed_yes_no.",".$UPS_ups_outlet_group_turn_off_enable.",".$UPS_ups_outlet_group_turn_off_delay.",".$from_email.",".$shutdown_battery_voltage.",".$shutdown_run_time_hours.",".$shutdown_run_time_min.",".$shutdown_run_time_sec.",".$max_on_battery_temp.",".$shutdown_trigger.",".$load_shed_trigger.",".$load_shed_voltage.",".$pdu_load_shed_enable.",".$synology_ss_load_shed_enable.",".$plex_load_shed_enable.",".$load_shed_run_time_hours.",".$load_shed_run_time_min.",".$load_shed_run_time_sec.",".$enable_notifications.",".$ups_email_delay."";
+	$put_contents_string="".$UPS_monitor_runtime.",".$UPS_monitor_voltage.",".$ups_monitor_email.",".$ups_monitor_capture_interval.",".$UPS_url.",".$UPS_monitor_enable.",".$UPS_comm_loss_shutdown_interval.",".$UPS_comm_loss_shutdown_enable.",".$UPS_PDU_IP.",".$UPS_PLEX_IP.",".$UPS_plex_installed_volume.",".$server_name.",".$location_of_email_python_file.",".$plex_jelly_fin_installed_on_system.",".$plex_container_name.",".$jellyfin_container_name.",".$surveillance_container_name.",".$UPS_Syno_snmp_privacy_protocol.",".$UPS_UPS_AuthPass1.",".$UPS_UPS_PrivPass2.",".$UPS_UPS_snmp_user.",".$UPS_UPS_snmp_auth_protocol.",".$UPS_UPS_snmp_privacy_protocol.",".$UPS_PDU_AuthPass1.",".$UPS_PDU_PrivPass2.",".$UPS_PDU_snmp_user.",".$UPS_PDU_snmp_auth_protocol.",".$UPS_PDU_snmp_privacy_protocol.",".$UPS_outlet_1_load_shed_yes_no.",".$UPS_outlet_2_load_shed_yes_no.",".$UPS_outlet_3_load_shed_yes_no.",".$UPS_outlet_4_load_shed_yes_no.",".$UPS_outlet_5_load_shed_yes_no.",".$UPS_outlet_6_load_shed_yes_no.",".$UPS_outlet_7_load_shed_yes_no.",".$UPS_outlet_8_load_shed_yes_no.",".$UPS_outlet_9_load_shed_yes_no.",".$UPS_outlet_10_load_shed_yes_no.",".$UPS_outlet_11_load_shed_yes_no.",".$UPS_outlet_12_load_shed_yes_no.",".$UPS_outlet_13_load_shed_yes_no.",".$UPS_outlet_14_load_shed_yes_no.",".$UPS_outlet_15_load_shed_yes_no.",".$UPS_outlet_16_load_shed_yes_no.",".$UPS_ups_outlet_group_turn_off_enable.",".$UPS_ups_outlet_group_turn_off_delay.",".$from_email.",".$shutdown_battery_voltage.",".$shutdown_run_time_hours.",".$shutdown_run_time_min.",".$shutdown_run_time_sec.",".$max_on_battery_temp.",".$shutdown_trigger.",".$load_shed_trigger.",".$load_shed_voltage.",".$pdu_load_shed_enable.",".$synology_ss_load_shed_enable.",".$plex_load_shed_enable.",".$load_shed_run_time_hours.",".$load_shed_run_time_min.",".$load_shed_run_time_sec.",".$enable_notifications.",".$ups_email_delay."";
 		  
 	file_put_contents("$config_file",$put_contents_string );
 		  
@@ -260,29 +257,9 @@ if(isset($_POST['submit_ups_monitor'])){
 		$pieces = explode(",", $data);
 		
 		//Previous version of the script used only 47 configuration parameters. The new version uses 63. if the old configuration version is being used, make a backup and add the remaining values to the file
-		if (sizeof($pieces)==47){
-			echo "Attention, config file is being upgraded to match the new script configuration.";
-			$date = date('Y-m-d');
-			if (!copy("".$config_file."", "".$config_file_location."/".$config_file_name.".old_".$date."")) {
-				echo "failed to copy ".$config_file."...\n";
-			}else{
-				$newdata=",480,0,15,0,100,1,1,490,0,0,0,0,20,0,1,5";
-				file_put_contents($config_file, $newdata, FILE_APPEND);
-				$data = file_get_contents("$config_file");
-				$pieces = explode(",", $data);
-				if (sizeof($pieces)==63){
-					echo "<br><br>Upgrade Successful. Previous configuration file can be found at: ".$config_file_location."/".$config_file_name.".old_".$date."
-					<br><br>
-					ATTENTION refer to the red highlighted areas below to ensure they have been properly configured to ensure the script works correctly<br><br>";
-					$shutdown_battery_voltage_error="<b><font color=\"red\">Due to script upgrade, configure this parameter</font></b>";
-					$shutdown_run_time_error="<b><font color=\"red\">Due to script upgrade, configure this parameter</font></b>";
-					$max_on_battery_temp_error="<b><font color=\"red\">Due to script upgrade, configure this parameter</font></b>";
-					$load_shed_voltage_error="<b><font color=\"red\">Due to script upgrade, configure this parameter</font></b>";
-					$ups_email_delay_error="<b><font color=\"red\">Due to script upgrade, configure this parameter</font></b>";
-					$trigger_error="<b><font color=\"red\">Due to script upgrade, configure this parameter</font></b>";
-					$load_shed_run_time_error="<b><font color=\"red\">Due to script upgrade, configure this parameter</font></b>";
-				}
-			}
+		if (sizeof($pieces)!=63){
+			print "<h1><font color=\"red\">Attention, config file is incorrect, config file should have 63 paramters, current file has ".sizeof($pieces)." paramters</font></h1>";
+			exit;
 		}
 			
 		//$unused=$pieces[0];
@@ -296,13 +273,22 @@ if(isset($_POST['submit_ups_monitor'])){
 		$UPS_PDU_IP=$pieces[8];
 		$UPS_PLEX_IP=$pieces[9];
 		$UPS_plex_installed_volume=$pieces[10];
-		//$unused=$pieces[11];
-		//$unused=$pieces[12];
-		$UPS_Syno_AuthPass1=$pieces[13];
-		$UPS_Syno_PrivPass2=$pieces[14];
-		$UPS_Syno_snmp_user=$pieces[15];
-		$UPS_Syno_snmp_auth_protocol=$pieces[16];
-		$UPS_Syno_snmp_privacy_protocol=$pieces[17];
+		
+		
+		
+		
+		$server_name=$pieces[11];
+		$location_of_email_python_file=$pieces[12];
+		$plex_jelly_fin_installed_on_system=$pieces[13];
+		$plex_container_name=$pieces[14];
+		$jellyfin_container_name=$pieces[15];
+		$surveillance_container_name=$pieces[16];
+		$UPS_Syno_snmp_privacy_protocol=0;
+		
+		
+		
+		
+		
 		$UPS_UPS_AuthPass1=$pieces[18];
 		$UPS_UPS_PrivPass2=$pieces[19];
 		$UPS_UPS_snmp_user=$pieces[20];
@@ -363,13 +349,23 @@ if(isset($_POST['submit_ups_monitor'])){
 		$UPS_PDU_IP="0.0.0.0";
 		$UPS_PLEX_IP="0.0.0.0";
 		$UPS_plex_installed_volume="volume1";
-		$UPS_load_shed_early_time=0;
-		$UPS_load_shed_control=0;
-		$UPS_Syno_AuthPass1="password1";
-		$UPS_Syno_PrivPass2="password2";
-		$UPS_Syno_snmp_user="Syno_user";
-		$UPS_Syno_snmp_auth_protocol="MD5";
-		$UPS_Syno_snmp_privacy_protocol="AES";
+		
+		
+		
+		
+		
+		
+		$server_name=TrueNAS;
+		$location_of_email_python_file="/mnt/volume1/logging/multireport_sendemail.py";
+		$plex_jelly_fin_installed_on_system=0;
+		$plex_container_name="plex";
+		$jellyfin_container_name="jellyfin";
+		$surveillance_container_name="frigate";
+		
+		
+		
+		
+		$UPS_Syno_snmp_privacy_protocol=0; //unused
 		$UPS_UPS_AuthPass1="password3";
 		$UPS_UPS_PrivPass2="password4";
 		$UPS_UPS_snmp_user="UPS_user";
@@ -418,7 +414,7 @@ if(isset($_POST['submit_ups_monitor'])){
 		$load_shed_run_time_sec=0;
 		$enable_notifications=1;
 		$ups_email_delay=5;
-		$put_contents_string="".$UPS_monitor_runtime.",".$UPS_monitor_voltage.",".$ups_monitor_email.",".$ups_monitor_capture_interval.",".$UPS_url.",".$UPS_monitor_enable.",".$UPS_comm_loss_shutdown_interval.",".$UPS_comm_loss_shutdown_enable.",".$UPS_PDU_IP.",".$UPS_PLEX_IP.",".$UPS_plex_installed_volume.",".$UPS_load_shed_early_time.",".$UPS_load_shed_control.",".$UPS_Syno_AuthPass1.",".$UPS_Syno_PrivPass2.",".$UPS_Syno_snmp_user.",".$UPS_Syno_snmp_auth_protocol.",".$UPS_Syno_snmp_privacy_protocol.",".$UPS_UPS_AuthPass1.",".$UPS_UPS_PrivPass2.",".$UPS_UPS_snmp_user.",".$UPS_UPS_snmp_auth_protocol.",".$UPS_UPS_snmp_privacy_protocol.",".$UPS_PDU_AuthPass1.",".$UPS_PDU_PrivPass2.",".$UPS_PDU_snmp_user.",".$UPS_PDU_snmp_auth_protocol.",".$UPS_PDU_snmp_privacy_protocol.",".$UPS_outlet_1_load_shed_yes_no.",".$UPS_outlet_2_load_shed_yes_no.",".$UPS_outlet_3_load_shed_yes_no.",".$UPS_outlet_4_load_shed_yes_no.",".$UPS_outlet_5_load_shed_yes_no.",".$UPS_outlet_6_load_shed_yes_no.",".$UPS_outlet_7_load_shed_yes_no.",".$UPS_outlet_8_load_shed_yes_no.",".$UPS_outlet_9_load_shed_yes_no.",".$UPS_outlet_10_load_shed_yes_no.",".$UPS_outlet_10_load_shed_yes_no.",".$UPS_outlet_12_load_shed_yes_no.",".$UPS_outlet_13_load_shed_yes_no.",".$UPS_outlet_14_load_shed_yes_no.",".$UPS_outlet_15_load_shed_yes_no.",".$UPS_outlet_16_load_shed_yes_no.",".$UPS_ups_outlet_group_turn_off_enable.",".$UPS_ups_outlet_group_turn_off_delay.",".$from_email.",".$shutdown_battery_voltage.",".$shutdown_run_time_hours.",".$shutdown_run_time_min.",".$shutdown_run_time_sec.",".$max_on_battery_temp.",".$shutdown_trigger.",".$load_shed_trigger.",".$load_shed_voltage.",".$pdu_load_shed_enable.",".$synology_ss_load_shed_enable.",".$plex_load_shed_enable.",".$load_shed_run_time_hours.",".$load_shed_run_time_min.",".$load_shed_run_time_sec.",".$enable_notifications.",".$ups_email_delay."";
+		$put_contents_string="".$UPS_monitor_runtime.",".$UPS_monitor_voltage.",".$ups_monitor_email.",".$ups_monitor_capture_interval.",".$UPS_url.",".$UPS_monitor_enable.",".$UPS_comm_loss_shutdown_interval.",".$UPS_comm_loss_shutdown_enable.",".$UPS_PDU_IP.",".$UPS_PLEX_IP.",".$UPS_plex_installed_volume.",".$server_name.",".$location_of_email_python_file.",".$plex_jelly_fin_installed_on_system.",".$plex_container_name.",".$jellyfin_container_name.",".$surveillance_container_name.",".$UPS_Syno_snmp_privacy_protocol.",".$UPS_UPS_AuthPass1.",".$UPS_UPS_PrivPass2.",".$UPS_UPS_snmp_user.",".$UPS_UPS_snmp_auth_protocol.",".$UPS_UPS_snmp_privacy_protocol.",".$UPS_PDU_AuthPass1.",".$UPS_PDU_PrivPass2.",".$UPS_PDU_snmp_user.",".$UPS_PDU_snmp_auth_protocol.",".$UPS_PDU_snmp_privacy_protocol.",".$UPS_outlet_1_load_shed_yes_no.",".$UPS_outlet_2_load_shed_yes_no.",".$UPS_outlet_3_load_shed_yes_no.",".$UPS_outlet_4_load_shed_yes_no.",".$UPS_outlet_5_load_shed_yes_no.",".$UPS_outlet_6_load_shed_yes_no.",".$UPS_outlet_7_load_shed_yes_no.",".$UPS_outlet_8_load_shed_yes_no.",".$UPS_outlet_9_load_shed_yes_no.",".$UPS_outlet_10_load_shed_yes_no.",".$UPS_outlet_10_load_shed_yes_no.",".$UPS_outlet_12_load_shed_yes_no.",".$UPS_outlet_13_load_shed_yes_no.",".$UPS_outlet_14_load_shed_yes_no.",".$UPS_outlet_15_load_shed_yes_no.",".$UPS_outlet_16_load_shed_yes_no.",".$UPS_ups_outlet_group_turn_off_enable.",".$UPS_ups_outlet_group_turn_off_delay.",".$from_email.",".$shutdown_battery_voltage.",".$shutdown_run_time_hours.",".$shutdown_run_time_min.",".$shutdown_run_time_sec.",".$max_on_battery_temp.",".$shutdown_trigger.",".$load_shed_trigger.",".$load_shed_voltage.",".$pdu_load_shed_enable.",".$synology_ss_load_shed_enable.",".$plex_load_shed_enable.",".$load_shed_run_time_hours.",".$load_shed_run_time_min.",".$load_shed_run_time_sec.",".$enable_notifications.",".$ups_email_delay."";
 		  
 		file_put_contents("$config_file",$put_contents_string );
 	}
@@ -474,7 +470,8 @@ print "		</td>
 							<option value=\"60\" selected>1</option>";
 						}
 print "					</select></p>
-						<p>UPS Minimum Input Voltage [Volts]: <input type=\"text\" name=\"UPS_monitor_voltage\" value=".$UPS_monitor_voltage."><font size=\"1\">Ensure it is the same as the UPS activation voltage Configured on the Management Card</font> ".$UPS_monitor_voltage_error."</p>
+						<p>UPS Minimum Input Voltage [Volts]: <input type=\"text\" maxlength=\"3\" size=\"3\" name=\"UPS_monitor_voltage\" value=".$UPS_monitor_voltage."><font size=\"1\">Ensure it is the same as the UPS activation voltage Configured on the Management Card</font> ".$UPS_monitor_voltage_error."</p>
+						<p>Server Name: <input type=\"text\" name=\"server_name\" value=".$server_name."> ".$server_name_error."</p>
 					</fieldset>	
 					<fieldset>
 						<legend>
@@ -513,9 +510,9 @@ print "					</select></p>
 							<option value=\"5\" selected>Battery Voltage ONLY</option>";
 						}
 print "					</select>".$trigger_error."</p>
-						<p>Battery Voltage Threshold [Volts]: <input type=\"text\" name=\"shutdown_battery_voltage\" value=".$shutdown_battery_voltage_decimal.">".$shutdown_battery_voltage_error."</p>
-						<p>Run Time: <input type=\"text\" name=\"shutdown_run_time_hours\" value=".$shutdown_run_time_hours."> Hours <input type=\"text\" name=\"shutdown_run_time_min\" value=".$shutdown_run_time_min."> Minuets <input type=\"text\" name=\"shutdown_run_time_sec\" value=".$shutdown_run_time_sec."> Seconds ".$shutdown_run_time_error."</p>
-						<p>Max \"ON Battery\" UPS Battery Temperature [C]: <input type=\"text\" name=\"max_on_battery_temp\" value=".$max_on_battery_temp_decimal.">".$max_on_battery_temp_error."</p>
+						<p>Battery Voltage Threshold [Volts]: <input type=\"text\" maxlength=\"4\" size=\"4\" name=\"shutdown_battery_voltage\" value=".$shutdown_battery_voltage_decimal.">".$shutdown_battery_voltage_error."</p>
+						<p>Run Time: <input type=\"text\" name=\"shutdown_run_time_hours\" maxlength=\"2\" size=\"2\" value=".$shutdown_run_time_hours."> Hours <input type=\"text\" maxlength=\"2\" size=\"2\" name=\"shutdown_run_time_min\" value=".$shutdown_run_time_min."> Minuets <input type=\"text\" maxlength=\"2\" size=\"2\" name=\"shutdown_run_time_sec\" value=".$shutdown_run_time_sec."> Seconds ".$shutdown_run_time_error."</p>
+						<p>Max \"ON Battery\" UPS Battery Temperature [C]: <input type=\"text\" maxlength=\"4\" size=\"4\" name=\"max_on_battery_temp\" value=".$max_on_battery_temp_decimal.">".$max_on_battery_temp_error."</p>
 						<p><input type=\"checkbox\" name=\"UPS_comm_loss_shutdown_enable\" value=\"1\" ";
 						if ($UPS_comm_loss_shutdown_enable==1){
 							print "checked";
@@ -1325,14 +1322,26 @@ print "					</select> Hours</p>
 						if ($synology_ss_load_shed_enable==1){
 							print "checked";
 						}
-						print ">Enable Load Shed of Synology Surveillance Station ".$trigger_error."</p>
+						print ">Enable Load Shed of Surveillance Docker Container ".$trigger_error."</p>
+						<p>Load Shed - Surveillance Docker Container Name: <input type=\"text\" name=\"surveillance_container_name\" value=".$surveillance_container_name."><font size=\"1\">Do not include lead slash \"/\". If Surveillance Container is not installed on the system, leave as default</font> ".$surveillance_container_name_error."</p>
+						<p><input type=\"checkbox\" name=\"plex_jelly_fin_installed_on_system\" value=\"1\" ";
+						if ($plex_jelly_fin_installed_on_system==1){
+							print "checked";
+						}
+						print ">Plex and or JellyFin Docker Apps Installed on System?".$trigger_error."</p>
 						<p><input type=\"checkbox\" name=\"plex_load_shed_enable\" value=\"1\" ";
 						if ($plex_load_shed_enable==1){
 							print "checked";
 						}
-						print ">Enable Load Shed of PLEX Media Server ".$trigger_error."</p>
+						print ">Enable Load Shed of PLEX and or JellyFin Docker Containers ".$trigger_error."</p>
 						<p>Load Shed - Plex Media Server IP Address: <input type=\"text\" name=\"UPS_PLEX_IP\" value=".$UPS_PLEX_IP."><font size=\"1\">If PLEX is not installed on the system, leave as default</font> ".$UPS_PLEX_IP_error."</p>
 						<p>Load Shed - Plex Media Server Installed Volume: <input type=\"text\" name=\"UPS_plex_installed_volume\" value=".$UPS_plex_installed_volume."><font size=\"1\">Do not include lead slash \"/\". If PLEX is not installed on the system, leave as default</font> ".$UPS_plex_installed_volume_error."</p>
+						
+						<p>Load Shed - Plex Media Server Docker Container Name: <input type=\"text\" name=\"plex_container_name\" value=".$plex_container_name."><font size=\"1\">Do not include lead slash \"/\". If PLEX is not installed on the system, leave as default</font> ".$plex_container_name_error."</p>
+						<p>Load Shed - JellyFin Docker Container Name: <input type=\"text\" name=\"jellyfin_container_name\" value=".$jellyfin_container_name."><font size=\"1\">Do not include lead slash \"/\". If JellyFin is not installed on the system, leave as default</font> ".$jellyfin_container_name_error."</p>
+						
+						
+						
 						<p>Load Shed Trigger : <select name=\"load_shed_trigger\">";
 						if ($load_shed_trigger==1){
 							print "<option value=\"1\" selected>UPS Run Time Remaining</option>
@@ -1366,8 +1375,8 @@ print "					</select> Hours</p>
 							<option value=\"5\" selected>Battery Voltage ONLY</option>";
 						}
 print "					</select>".$trigger_error."</p>
-						<p>Battery Voltage Threshold [Volts]: <input type=\"text\" name=\"load_shed_voltage\" value=".$load_shed_voltage_decimal.">".$load_shed_voltage_error."</p>
-						<p>Run Time: <input type=\"text\" name=\"load_shed_run_time_hours\" value=".$load_shed_run_time_hours."> Hours <input type=\"text\" name=\"load_shed_run_time_min\" value=".$load_shed_run_time_min."> Minuets <input type=\"text\" name=\"load_shed_run_time_sec\" value=".$load_shed_run_time_sec."> Seconds ".$load_shed_run_time_error."</p>
+						<p>Battery Voltage Threshold [Volts]: <input type=\"text\" maxlength=\"4\" size=\"4\" name=\"load_shed_voltage\" value=".$load_shed_voltage_decimal.">".$load_shed_voltage_error."</p>
+						<p>Run Time: <input type=\"text\" maxlength=\"2\" size=\"2\" name=\"load_shed_run_time_hours\" value=".$load_shed_run_time_hours."> Hours <input type=\"text\" maxlength=\"2\" size=\"2\" name=\"load_shed_run_time_min\" value=".$load_shed_run_time_min."> Minuets <input type=\"text\" maxlength=\"2\" size=\"2\" name=\"load_shed_run_time_sec\" value=".$load_shed_run_time_sec."> Seconds ".$load_shed_run_time_error."</p>
 
 					</fieldset>
 					<fieldset>
@@ -1381,36 +1390,13 @@ print "					</select>".$trigger_error."</p>
 							print "checked";
 						}
 						print ">Enable Email Notifications ".$ups_email_delay_error."</p>
-						<p>Email Notification Every: <input type=\"text\" name=\"ups_email_delay\" value=".$ups_email_delay."> Minuets ".$ups_email_delay_error."</p>
+						<p>Email Notification Every: <input type=\"text\" maxlength=\"2\" size=\"2\" name=\"ups_email_delay\" value=".$ups_email_delay."> Minuets ".$ups_email_delay_error."</p>
+						<p>Email Script File Location: <input type=\"text\" name=\"location_of_email_python_file\" value=".$location_of_email_python_file.">".$location_of_email_python_file_error."</p>
 					</fieldset>
 					<fieldset>
 						<legend>
 							<b>SNMP Settings</b>
 						</legend>	
-					
-						<p><u>SYNOLOGY SNMP SETTINGS</u></p>
-						<p>Authorization Password: <input type=\"text\" name=\"UPS_Syno_AuthPass1\" value=".$UPS_Syno_AuthPass1."> ".$UPS_Syno_AuthPass1_error."</p>
-						<p>Privacy Password: <input type=\"text\" name=\"UPS_Syno_PrivPass2\" value=".$UPS_Syno_PrivPass2."> ".$UPS_Syno_PrivPass2_error."</p>
-						<p>User Name: <input type=\"text\" name=\"UPS_Syno_snmp_user\" value=".$UPS_Syno_snmp_user."> ".$UPS_Syno_snmp_user_error."</p>
-						<p>Authorization Protocol: <select name=\"UPS_Syno_snmp_auth_protocol\">";
-						if ($UPS_Syno_snmp_auth_protocol=="MD5"){
-							print "<option value=\"MD5\" selected>MD5</option>
-							<option value=\"SHA\">SHA</option>";
-						}else if ($UPS_Syno_snmp_auth_protocol=="SHA"){
-							print "<option value=\"MD5\">MD5</option>
-							<option value=\"SHA\" selected>SHA</option>";
-						}
-print "					</select></p>
-						<p>Privacy Protocol: <select name=\"UPS_Syno_snmp_privacy_protocol\">";
-						if ($UPS_Syno_snmp_privacy_protocol=="AES"){
-							print "<option value=\"AES\" selected>AES</option>
-							<option value=\"DES\">DES</option>";
-						}else if ($UPS_Syno_snmp_privacy_protocol=="DES"){
-							print "<option value=\"AES\">AES</option>
-							<option value=\"DES\" selected>DES</option>";
-						}
-print "					</select></p>
-						<br>
 						<p><u>UPS NMC SNMP SETTINGS</u></p>	
 						<p>UPS IP: <input type=\"text\" name=\"UPS_url\" value=".$UPS_url."> ".$UPS_monitor_url_error."</p>
 						<p>Authorization Password: <input type=\"text\" name=\"UPS_UPS_AuthPass1\" value=".$UPS_UPS_AuthPass1."> ".$UPS_UPS_AuthPass1_error."</p>
